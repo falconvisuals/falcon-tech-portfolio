@@ -1,0 +1,64 @@
+media:
+  - name: portfolio_images
+    label: Portfolio Images
+    input: projects
+    output: projects
+    categories: [image]
+    extensions: [jpg, jpeg, png, webp, gif]
+    rename: safe
+    commit:
+      templates:
+        create: "Add portfolio image: {filename}"
+        update: "Update portfolio image: {filename}"
+        delete: "Remove portfolio image: {filename}"
+        rename: "Rename portfolio image: {oldFilename} -> {newFilename}"
+
+content:
+  - name: portfolio_projects
+    label: Portfolio Projects
+    type: file
+    path: projects.json
+    format: json
+    list: true
+    fields:
+      - name: title
+        label: Project Title
+        type: string
+        required: true
+        description: Name shown on the Falcon Visuals portfolio card.
+
+      - name: category
+        label: Category
+        type: select
+        required: true
+        options:
+          placeholder: Select a portfolio category
+          values:
+            - Artwork
+            - Mascot
+            - Text Base
+            - Vector Art
+            - Emotes
+            - name: V-tuber
+              label: V-Tuber
+
+      - name: images
+        label: Project Images
+        type: image
+        required: true
+        description: Upload one or multiple images for this project. The first image is used as the card thumbnail.
+        options:
+          media: portfolio_images
+          path: uploads
+          multiple: true
+          unique: true
+          categories: [image]
+          extensions: [jpg, jpeg, png, webp, gif]
+          rename: safe
+
+settings:
+  hide: true
+  commit:
+    identity: user
+    templates:
+      update: "Update Falcon Visuals portfolio via Pages CMS"
