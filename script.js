@@ -5,463 +5,389 @@
 let portfolio = {};
 let currentImages = [];
 let currentIndex = 0;
+let activeFilter = 'All';
+let searchTerm = '';
 
 const sectionMap = {
-    "Artwork": "artwork",
-    "Mascot": "mascot",
-    "Text Base": "textbase",
-    "Vector Art": "vector",
-    "Emotes": "emotes",
-    "V-tuber": "vtuber"
+    'Artwork': 'artwork',
+    'Mascot': 'mascot',
+    'Text Base': 'textbase',
+    'Vector Art': 'vector',
+    'Emotes': 'emotes',
+    'V-tuber': 'vtuber'
 };
 
-/* =========================
-LOAD JSON
-========================= */
+const overlay = document.getElementById('galleryOverlay');
+const searchInput = document.getElementById('search');
+const menuToggle = document.getElementById('menuToggle');
+const navMenu = document.getElementById('navMenu');
+const cursor = document.querySelector('.cursor-glow');
+const header = document.getElementById('header');
+const bookingForm = document.getElementById('bookingForm');
 
 async function loadPortfolio() {
-
     try {
-
-        const response = await fetch("projects.json");
-
+        const response = await fetch('projects.json', { cache: 'no-store' });
         portfolio = await response.json();
-
         createGallery();
-
-    } catch (err) {
-
-        console.error("Projects JSON Error:", err);
-
+        updateStats();
+        applyFilters();
+    } catch (error) {
+        console.error('Projects JSON Error:', error);
     }
-
 }
-
-loadPortfolio();
-
-/* =========================
-CREATE GALLERY
-========================= */
 
 function createGallery() {
-
     Object.keys(portfolio).forEach(category => {
-
-        const gallery = document.querySelector(
-            "#" + sectionMap[category] + " .gallery"
-        );
-
+        const gallery = document.querySelector(`#${sectionMap[category]} .gallery`);
         if (!gallery) return;
 
-        gallery.innerHTML = "";
+        gallery.innerHTML = '';
 
         portfolio[category].forEach(project => {
+            const card = document.createElement('article');
+            card.className = 'project-card';
+            card.dataset.title = (project.title || '').toLowerCase();
+            card.dataset.category = category;
 
-            const card = document.createElement("div");
-
-            card.className = "project-card";
+            const firstImage = (project.images && project.images[0]) ? project.images[0] : 'preview.jpg';
 
             card.innerHTML = `
-
-                <img src="${project.images[0]}" loading="lazy">
-
+                <div class="thumb-wrap">
+                    <img src="${firstImage}" alt="${project.title}" loading="lazy">
+                    <span class="thumb-shade"></span>
+                </div>
                 <h4>${project.title}</h4>
-
             `;
 
-            card.onclick = () => {
-
-                currentImages = project.images.filter(Boolean);
-
+            card.addEventListener('click', () => {
+                currentImages = (project.images || []).filter(Boolean);
                 currentIndex = 0;
-
                 openGallery();
-
-            };
+            });
 
             gallery.appendChild(card);
-
         });
-
     });
-
 }
-/* ===========================
-FULL SCREEN GALLERY
-=========================== */
 
 function openGallery() {
+    if (!currentImages.length) return;
 
-    const overlay = document.getElementById("galleryOverlay");
+    overlay.innerHTML = '';
+    overlay.classList.add('active');
+    overlay.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
 
-    overlay.innerHTML = "";
+    const content = document.createElement('div');
+    content.className = 'gallery-content';
 
-    overlay.classList.add("active");
+    const close = document.createElement('button');
+    close.className = 'gallery-close';
+    close.setAttribute('aria-label', 'Close gallery');
+    close.innerHTML = '<i class="fas fa-times"></i>';
 
-    const content = document.createElement("div");
-    content.className = "gallery-content";
+    const prev = document.createElement('button');
+    prev.className = 'gallery-prev';
+    prev.setAttribute('aria-label', 'Previous image');
+    prev.innerHTML = '<i class="fas fa-chevron-left"></i>';
 
-    const close = document.createElement("span");
-    close.className = "close-gallery";
-    close.innerHTML = "&times;";
+    const next = document.createElement('button');
+    next.className = 'gallery-next';
+    next.setAttribute('aria-label', 'Next image');
+    next.innerHTML = '<i class="fas fa-chevron-right"></i>';
 
-    close.onclick = () => {
+    const counter = document.createElement('div');
+    counter.className = 'gallery-counter';
 
-        overlay.classList.remove("active");
+    const tip = document.createElement('div');
+    tip.className = 'gallery-tip';
+    tip.textContent = 'Protected preview • Do not copy or download';
 
+    const escHandler = (event) => {
+        if (event.key === 'Escape') closeGallery();
+        if (event.key === 'ArrowLeft') showPrev();
+        if (event.key === 'ArrowRight') showNext();
     };
 
-    const prev = document.createElement("button");
-    prev.className = "gallery-prev";
-    prev.innerHTML = "❮";
-
-    const next = document.createElement("button");
-    next.className = "gallery-next";
-    next.innerHTML = "❯";
+    const closeGallery = () => {
+        overlay.classList.remove('active');
+        overlay.setAttribute('aria-hidden', 'true');
+        overlay.innerHTML = '';
+        document.body.style.overflow = '';
+        overlay.removeEventListener('click', overlayClickHandler);
+        document.removeEventListener('keydown', escHandler);
+    };
 
     function showImage() {
-
-        content.querySelectorAll("img,video,.image-wrapper").forEach(el => el.remove());
+        const oldMedia = content.querySelector('.image-wrapper, video');
+        if (oldMedia) oldMedia.remove();
 
         const file = currentImages[currentIndex];
-
         if (!file) return;
 
-        const ext = file.split(".").pop().toLowerCase();
+        const ext = file.split('.').pop().toLowerCase();
+        counter.textContent = `${currentIndex + 1} / ${currentImages.length}`;
 
-        if (["mp4", "webm"].includes(ext)) {
-
-            const video = document.createElement("video");
-
+        if (['mp4', 'webm'].includes(ext)) {
+            const video = document.createElement('video');
+            video.className = 'gallery-media';
             video.src = file;
-
             video.controls = true;
-
-            video.autoplay = true;
-
             video.playsInline = true;
-
-            content.appendChild(video);
-
+            video.autoplay = true;
+            content.insertBefore(video, close);
         } else {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'image-wrapper';
 
-            const wrapper = document.createElement("div");
-
-            wrapper.className = "image-wrapper";
-
-            const img = document.createElement("img");
-
+            const img = document.createElement('img');
+            img.className = 'gallery-media';
             img.src = file;
-
+            img.alt = 'Project preview';
+            img.loading = 'lazy';
             img.draggable = false;
 
-            img.loading = "lazy";
-
-            const watermark = document.createElement("div");
-
-            watermark.className = "watermark";
-
-            watermark.textContent = "FALCON VISUALS";
+            const watermark = document.createElement('div');
+            watermark.className = 'watermark';
+            watermark.textContent = '© Falcon Visuals';
 
             wrapper.appendChild(img);
-
             wrapper.appendChild(watermark);
-
-            content.appendChild(wrapper);
-
+            content.insertBefore(wrapper, close);
         }
-
     }
 
-    prev.onclick = () => {
-
-        currentIndex--;
-
-        if (currentIndex < 0)
-            currentIndex = currentImages.length - 1;
-
+    const showPrev = () => {
+        currentIndex = (currentIndex - 1 + currentImages.length) % currentImages.length;
         showImage();
-
     };
 
-    next.onclick = () => {
-
-        currentIndex++;
-
-        if (currentIndex >= currentImages.length)
-            currentIndex = 0;
-
+    const showNext = () => {
+        currentIndex = (currentIndex + 1) % currentImages.length;
         showImage();
-
     };
+
+    close.addEventListener('click', closeGallery);
+    prev.addEventListener('click', showPrev);
+    next.addEventListener('click', showNext);
+
+    const overlayClickHandler = (event) => {
+        if (event.target === overlay) closeGallery();
+    };
+
+    overlay.addEventListener('click', overlayClickHandler);
+    document.addEventListener('keydown', escHandler);
+
+    let touchStartX = 0;
+    content.addEventListener('touchstart', (event) => {
+        touchStartX = event.changedTouches[0].screenX;
+    }, { passive: true });
+
+    content.addEventListener('touchend', (event) => {
+        const touchEndX = event.changedTouches[0].screenX;
+        if (touchStartX - touchEndX > 50) showNext();
+        if (touchEndX - touchStartX > 50) showPrev();
+    }, { passive: true });
 
     content.appendChild(close);
     content.appendChild(prev);
     content.appendChild(next);
-
+    content.appendChild(counter);
+    content.appendChild(tip);
     overlay.appendChild(content);
-
-showImage();
-
-let touchStartX = 0;
-let touchEndX = 0;
-
-content.addEventListener("touchstart", (e) => {
-    touchStartX = e.changedTouches[0].screenX;
-}, { passive: true });
-
-content.addEventListener("touchend", (e) => {
-    touchEndX = e.changedTouches[0].screenX;
-
-    if (touchStartX - touchEndX > 50) {
-        next.click();
-    }
-
-    if (touchEndX - touchStartX > 50) {
-        prev.click();
-    }
-}, { passive: true });
-
+    showImage();
 }
 
-/* ===========================
-SEARCH
-=========================== */
+function applyFilters() {
+    document.querySelectorAll('#portfolio section').forEach(section => {
+        const sectionTitle = section.dataset.category || section.querySelector('h3')?.textContent || '';
+        const cards = Array.from(section.querySelectorAll('.project-card'));
 
-const search = document.getElementById("search");
-
-if (search) {
-
-    search.addEventListener("input", function () {
-
-        const value = this.value.toLowerCase();
-
-        document.querySelectorAll(".project-card").forEach(card => {
-
-            const title = card.querySelector("h4").textContent.toLowerCase();
-
-            card.style.display = title.includes(value)
-                ? ""
-                : "none";
-
+        let visibleCards = 0;
+        cards.forEach(card => {
+            const title = card.dataset.title || '';
+            const matchesSearch = !searchTerm || title.includes(searchTerm);
+            const matchesFilter = activeFilter === 'All' || sectionTitle === activeFilter;
+            const shouldShow = matchesSearch && matchesFilter;
+            card.style.display = shouldShow ? '' : 'none';
+            if (shouldShow) visibleCards += 1;
         });
 
+        section.style.display = (visibleCards > 0) ? 'block' : 'none';
     });
-
 }
 
-/* ===========================
-FILTERS
-=========================== */
+function updateStats() {
+    const projectCount = Object.values(portfolio).reduce((sum, list) => sum + list.length, 0);
+    const categoryCount = Object.keys(portfolio).length;
+    const statTargets = document.querySelectorAll('.counter');
+    if (statTargets[0]) statTargets[0].dataset.target = projectCount;
+    if (statTargets[1]) statTargets[1].dataset.target = categoryCount;
+}
 
-document.querySelectorAll(".filter-btn").forEach(btn => {
-
-    btn.addEventListener("click", () => {
-
-        document.querySelectorAll(".filter-btn")
-            .forEach(b => b.classList.remove("active"));
-
-        btn.classList.add("active");
-
-        const filter = btn.textContent;
-
-        document.querySelectorAll("#portfolio section").forEach(section => {
-
-            const title = section.querySelector("h3").textContent;
-
-            if (filter === "All" || filter === title) {
-
-                section.style.display = "block";
-
-            } else {
-
-                section.style.display = "none";
-
-            }
-
-        });
-
+if (searchInput) {
+    searchInput.addEventListener('input', function () {
+        searchTerm = this.value.trim().toLowerCase();
+        applyFilters();
     });
+}
 
+document.querySelectorAll('.filter-btn').forEach(button => {
+    button.addEventListener('click', () => {
+        document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+        button.classList.add('active');
+        activeFilter = button.textContent.trim();
+        applyFilters();
+    });
 });
 
-/* ===========================
-FAQ
-=========================== */
-
-document.querySelectorAll(".faq-question").forEach(button => {
-
-    button.addEventListener("click", () => {
-
-        button.parentElement.classList.toggle("active");
-
+document.querySelectorAll('.faq-question').forEach(button => {
+    button.addEventListener('click', () => {
+        button.parentElement.classList.toggle('active');
     });
-
 });
 
-/* ===========================
-COUNTERS
-=========================== */
+const reveals = document.querySelectorAll('.reveal');
+function revealOnScroll() {
+    reveals.forEach(section => {
+        const top = section.getBoundingClientRect().top;
+        const trigger = window.innerHeight - 120;
+        if (top < trigger) section.classList.add('active');
+    });
+}
+window.addEventListener('scroll', revealOnScroll);
+window.addEventListener('load', revealOnScroll);
 
-const counters = document.querySelectorAll(".counter");
-
-const observer = new IntersectionObserver(entries => {
-
+const counters = document.querySelectorAll('.counter');
+const counterObserver = new IntersectionObserver(entries => {
     entries.forEach(entry => {
-
         if (!entry.isIntersecting) return;
 
         const counter = entry.target;
-
-        const target = Number(counter.dataset.target);
-
+        const target = Number(counter.dataset.target || 0);
         let value = 0;
-
-        const speed = target / 80;
+        const speed = Math.max(target / 80, 1);
 
         function update() {
-
             value += speed;
-
             if (value < target) {
-
                 counter.textContent = Math.floor(value);
-
                 requestAnimationFrame(update);
-
             } else {
-
-                counter.textContent = target + "+";
-
+                counter.textContent = `${target}+`;
             }
-
         }
 
         update();
-
-        observer.unobserve(counter);
-
+        counterObserver.unobserve(counter);
     });
-
 });
-
-counters.forEach(counter => observer.observe(counter));
-
-/* ===========================
-MOBILE MENU
-=========================== */
-
-const menuToggle = document.getElementById("menuToggle");
-
-const navMenu = document.getElementById("navMenu");
+counters.forEach(counter => counterObserver.observe(counter));
 
 if (menuToggle) {
-
-    menuToggle.onclick = () => {
-
-        navMenu.classList.toggle("active");
-
-    };
-
+    menuToggle.addEventListener('click', () => navMenu.classList.toggle('active'));
 }
 
-/* ===========================
-LOADER
-=========================== */
-
-window.addEventListener("load", () => {
-
-    const loader = document.getElementById("loader");
-
-    if (loader) {
-
-        setTimeout(() => {
-
-            loader.classList.add("hide");
-
-        }, 1000);
-
-    }
-
+document.querySelectorAll('nav a').forEach(link => {
+    link.addEventListener('click', () => navMenu.classList.remove('active'));
 });
 
-/* ===========================
-IMAGE PROTECTION
-=========================== */
-
-document.addEventListener("contextmenu", e => e.preventDefault());
-
-document.addEventListener("dragstart", e => {
-
-    if (e.target.tagName === "IMG") {
-
-        e.preventDefault();
-
-    }
-
+window.addEventListener('scroll', () => {
+    header.classList.toggle('scrolled', window.scrollY > 10);
 });
-/* =========================
-SCROLL REVEAL
-========================= */
 
-const reveals = document.querySelectorAll(".reveal");
+window.addEventListener('load', () => {
+    const loader = document.getElementById('loader');
+    requestAnimationFrame(() => {
+        setTimeout(() => loader?.classList.add('hide'), 250);
+    });
+    document.body.classList.add('cursor-active');
+});
 
-function revealOnScroll() {
+const typingTarget = document.getElementById('typingText');
+if (typingTarget) {
+    const words = ['Professional Graphic Designer', 'Creative Design For Streamers', 'Branding & Custom Visuals'];
+    let wordIndex = 0;
+    let charIndex = 0;
+    let isDeleting = false;
 
-    reveals.forEach(section => {
+    function typeLoop() {
+        const currentWord = words[wordIndex];
+        typingTarget.textContent = currentWord.slice(0, charIndex);
 
-        const top = section.getBoundingClientRect().top;
-
-        const trigger = window.innerHeight - 120;
-
-        if (top < trigger) {
-
-            section.classList.add("active");
-
+        if (!isDeleting) {
+            charIndex++;
+            if (charIndex > currentWord.length) {
+                isDeleting = true;
+                setTimeout(typeLoop, 1200);
+                return;
+            }
+        } else {
+            charIndex--;
+            if (charIndex < 0) {
+                isDeleting = false;
+                wordIndex = (wordIndex + 1) % words.length;
+                charIndex = 0;
+            }
         }
 
-    });
+        setTimeout(typeLoop, isDeleting ? 45 : 75);
+    }
 
+    typeLoop();
 }
 
-window.addEventListener("scroll", revealOnScroll);
-
-window.addEventListener("load", revealOnScroll);
-/* ==========================
-CURSOR GLOW
-========================== */
-
-const cursor = document.querySelector(".cursor-glow");
-console.log(cursor);
-
-document.addEventListener("mousemove",(e)=>{
-
-    cursor.style.left = e.clientX + "px";
-
-    cursor.style.top = e.clientY + "px";
-
+document.addEventListener('contextmenu', event => event.preventDefault());
+document.addEventListener('dragstart', event => {
+    if (event.target.tagName === 'IMG') event.preventDefault();
+});
+document.addEventListener('keydown', event => {
+    const key = event.key.toLowerCase();
+    if ((event.ctrlKey || event.metaKey) && ['s', 'u', 'p'].includes(key)) event.preventDefault();
 });
 
-document.querySelectorAll("a, button, .project-card").forEach(item => {
-
-    item.addEventListener("mouseenter", () => {
-
-        cursor.style.width = "55px";
-        cursor.style.height = "55px";
-
-        cursor.style.boxShadow =
-            "0 0 35px rgba(181,116,255,.9), 0 0 80px rgba(181,116,255,.6)";
-
+if (cursor) {
+    document.addEventListener('mousemove', event => {
+        cursor.style.left = `${event.clientX}px`;
+        cursor.style.top = `${event.clientY}px`;
     });
 
-    item.addEventListener("mouseleave", () => {
-
-        cursor.style.width = "20px";
-        cursor.style.height = "20px";
-
-        cursor.style.boxShadow =
-            "0 0 25px rgba(181,116,255,.65), 0 0 55px rgba(181,116,255,.45), 0 0 90px rgba(181,116,255,.25)";
-
+    document.querySelectorAll('a, button, .project-card, input, textarea, select').forEach(item => {
+        item.addEventListener('mouseenter', () => document.body.classList.add('cursor-hover'));
+        item.addEventListener('mouseleave', () => document.body.classList.remove('cursor-hover'));
     });
+}
 
-});
+if (bookingForm) {
+    bookingForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        const name = document.getElementById('clientName').value.trim();
+        const discord = document.getElementById('discordUsername').value.trim();
+        const service = document.getElementById('serviceType').value.trim();
+        const budget = document.getElementById('budgetRange').value.trim() || 'Not specified';
+        const brief = document.getElementById('projectBrief').value.trim();
+
+        const message = [
+            'Falcon Visuals Project Brief',
+            `Name: ${name}`,
+            `Discord Username: ${discord}`,
+            `Category: ${service}`,
+            `Budget: ${budget}`,
+            `Requirements: ${brief}`
+        ].join('\n');
+
+        try {
+            await navigator.clipboard.writeText(message);
+            alert('Your project brief has been copied. Discord will open next — just paste the brief there.');
+        } catch (error) {
+            alert('Your project brief is ready. Discord will open next — if clipboard permission is blocked, copy the details manually.');
+        }
+
+        window.open('https://discord.gg/d3ZEnrrrNt', '_blank', 'noopener');
+        bookingForm.reset();
+    });
+}
+
+loadPortfolio();

@@ -1,437 +1,331 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
     <meta charset="UTF-8">
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>Falcon Visuals | Professional Graphic Designer</title>
     <link rel="icon" href="preview.jpg">
 
-<meta property="og:title" content="Falcon Visuals | Professional Graphics Portfolio">
-<meta property="og:description" content="Professional Logos, Banners, Overlays, Emotes, VTuber Assets & Digital Artwork.">
-<meta property="og:image" content="https://falconvisuals.github.io/falcon-tech-portfolio/preview.jpg">
-<meta property="og:url" content="https://falconvisuals.github.io/falcon-tech-portfolio/">
-<meta property="og:type" content="website">
+    <meta property="og:title" content="Falcon Visuals | Professional Graphics Portfolio">
+    <meta property="og:description" content="Professional Logos, Banners, Overlays, Emotes, VTuber Assets & Digital Artwork.">
+    <meta property="og:image" content="https://falconvisuals.github.io/falcon-tech-portfolio/preview.jpg">
+    <meta property="og:url" content="https://falconvisuals.github.io/falcon-tech-portfolio/">
+    <meta property="og:type" content="website">
 
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://falconvisuals.github.io/falcon-tech-portfolio/preview.jpg">
-
-    <meta name="description"
-        content="Professional Graphic Designer specializing in Logos, Mascots, Banners, Overlays, Emotes, V-Tuber Assets and Artwork.">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content="https://falconvisuals.github.io/falcon-tech-portfolio/preview.jpg">
+    <meta name="description" content="Professional Graphic Designer specializing in logos, mascot design, twitch graphics, emotes, VTuber assets and premium artwork.">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
-
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
-        rel="stylesheet">
-
-    <link rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
-
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <link rel="stylesheet" href="style.css">
-
 </head>
-
 <body>
 
-<!-- ===========================
-LOADER
-=========================== -->
-
-<div id="loader">
-
+<div id="loader" aria-hidden="true">
     <div class="loader-logo">
-
-        <h1>FALCON</h1>
-
-        <span>VISUALS</span>
-
+        <img src="preview.jpg" alt="Falcon Visuals logo">
+        <h1>Falcon <span>Visuals</span></h1>
     </div>
-
 </div>
 
-<!-- ===========================
-HEADER
-=========================== -->
-
 <header id="header">
-
-    <div class="container">
-
-        <a href="#" class="logo">
-
-            Falcon <span>Visuals</span>
-
+    <div class="container header-inner">
+        <a href="#home" class="brand" aria-label="Falcon Visuals home">
+            <img src="preview.jpg" alt="Falcon Visuals logo" class="brand-mark">
+            <div class="brand-copy">
+                <strong>Falcon Visuals</strong>
+                <span>Creative Graphics Studio</span>
+            </div>
         </a>
 
-        <nav id="navMenu">
-
+        <nav id="navMenu" aria-label="Primary navigation">
             <a href="#home">Home</a>
-
             <a href="#portfolio">Portfolio</a>
-
             <a href="#about">About</a>
-
             <a href="#faq">FAQ</a>
-
             <a href="#stats">Stats</a>
-
             <a href="#contact">Contact</a>
-
+            <a href="#contact" class="nav-cta">Book Project</a>
         </nav>
 
-        <div id="menuToggle">
-
+        <button id="menuToggle" aria-label="Toggle navigation">
             <i class="fas fa-bars"></i>
-
-        </div>
-
+        </button>
     </div>
-
 </header>
 
-<!-- ===========================
-HOME
-=========================== -->
-
 <section id="home" class="hero">
-
     <div class="hero-bg" aria-hidden="true"></div>
-
     <div class="container hero-content">
-
-        <h3>
-
-            Welcome To
-
-        </h3>
-
-        <h1>
-
-            Falcon <span>Visuals</span>
-
-        </h1>
-
-        <h2 id="typingText">
-
-            Professional Graphic Designer
-
-        </h2>
-
+        <span class="hero-badge">Premium design for creators, streamers and brands</span>
+        <h3>Welcome To</h3>
+        <h1>Falcon <span>Visuals</span></h1>
+        <h2 id="typingText">Professional Graphic Designer</h2>
         <p>
-
             Logos • Mascots • Artwork • Twitch Graphics • Emotes •
             V-Tuber Assets • Banners • Overlays
-
         </p>
-
         <div class="hero-buttons">
-
-            <a href="#portfolio" class="btn">
-
-                View Portfolio
-
-            </a>
-
-            <a href="#contact" class="btn secondary">
-
-                Contact Me
-
-            </a>
-
+            <a href="#portfolio" class="btn">View Portfolio</a>
+            <a href="#contact" class="btn secondary">Book A Project</a>
         </div>
-
     </div>
-
 </section>
-<!-- ===========================
-PORTFOLIO
-=========================== -->
 
 <section id="portfolio" class="portfolio reveal">
-
     <div class="container">
+        <h2 class="section-title">Portfolio</h2>
+        <p class="section-subtitle">Explore my latest professional design work.</p>
 
-        <h2 class="section-title">
-            Portfolio
-        </h2>
-
-        <p class="section-subtitle">
-            Explore my latest professional projects.
-        </p>
-
-        <div class="search-box">
-
-            <input
-                type="text"
-                id="search"
-                placeholder="Search Project...">
-
+        <div class="toolbar">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="search" placeholder="Search project...">
+            </div>
         </div>
 
         <div class="filter-buttons">
-
             <button class="filter-btn active">All</button>
-
             <button class="filter-btn">Artwork</button>
-
             <button class="filter-btn">Mascot</button>
-
             <button class="filter-btn">Text Base</button>
-
             <button class="filter-btn">Vector Art</button>
-
             <button class="filter-btn">Emotes</button>
-
             <button class="filter-btn">V-Tuber</button>
-
         </div>
 
-        <section id="artwork">
-
+        <section id="artwork" data-category="Artwork">
             <h3>Artwork</h3>
-
             <div class="gallery"></div>
-
         </section>
 
-        <section id="mascot">
-
+        <section id="mascot" data-category="Mascot">
             <h3>Mascot</h3>
-
             <div class="gallery"></div>
-
         </section>
 
-        <section id="textbase">
-
+        <section id="textbase" data-category="Text Base">
             <h3>Text Base</h3>
-
             <div class="gallery"></div>
-
         </section>
 
-        <section id="vector">
-
+        <section id="vector" data-category="Vector Art">
             <h3>Vector Art</h3>
-
             <div class="gallery"></div>
-
         </section>
 
-        <section id="emotes">
-
+        <section id="emotes" data-category="Emotes">
             <h3>Emotes</h3>
-
             <div class="gallery"></div>
-
         </section>
 
-        <section id="vtuber">
-
+        <section id="vtuber" data-category="V-Tuber">
             <h3>V-Tuber</h3>
-
             <div class="gallery"></div>
-
         </section>
-
     </div>
-
 </section>
-
-<!-- ===========================
-ABOUT
-=========================== -->
 
 <section id="about" class="about reveal">
-
     <div class="container">
-
-        <h2 class="section-title">
-            About Me
-        </h2>
-
+        <h2 class="section-title">About Me</h2>
         <p>
-
-            I'm Falcon Visuals, a passionate Graphic Designer creating
-            professional Logos, Mascots, Twitch Graphics, Emotes,
-            V-Tuber Assets and Premium Artwork.
-
+            I'm Falcon Visuals, a passionate graphic designer focused on creating high-quality visuals for
+            creators, streamers and brands. From mascots and logos to emotes, V-Tuber assets and custom artwork,
+            every project is crafted to feel polished, unique and ready to represent your identity professionally.
         </p>
-
     </div>
-
 </section>
-
-<!-- ===========================
-FAQ
-=========================== -->
 
 <section id="faq" class="faq reveal">
-
     <div class="container">
-
-        <h2 class="section-title">
-
-            Frequently Asked Questions
-
-        </h2>
+        <h2 class="section-title">Frequently Asked Questions</h2>
 
         <div class="faq-item">
-
-            <button class="faq-question">
-
-                What services do you provide?
-
-            </button>
-
+            <button class="faq-question">What services do you provide?</button>
             <div class="faq-answer">
-
-                Logo Design, Mascot Design, Twitch Graphics,
-                Overlays, Emotes, V-Tuber Assets,
-                Banners and Artwork.
-
+                Logo Design, Mascot Design, Twitch Graphics, Overlays, Emotes, V-Tuber Assets,
+                Banners, Text Based Graphics and Artwork.
             </div>
-
         </div>
 
         <div class="faq-item">
-
-            <button class="faq-question">
-
-                Do you accept custom orders?
-
-            </button>
-
+            <button class="faq-question">Do you accept custom orders?</button>
             <div class="faq-answer">
-
-                Yes. Every design is created according
-                to your requirements.
-
+                Yes. Every design is created according to your requirements and project goals.
             </div>
-
         </div>
 
+        <div class="faq-item">
+            <button class="faq-question">How do we discuss pricing and payment?</button>
+            <div class="faq-answer">
+                Project scope, pricing, payment terms and delivery details are discussed privately on Discord before work begins.
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <button class="faq-question">Can I request revisions?</button>
+            <div class="faq-answer">
+                Yes. Revision details depend on the type and scope of the project and are confirmed during the discussion stage.
+            </div>
+        </div>
     </div>
-
 </section>
-<!-- ===========================
-STATS
-=========================== -->
 
 <section id="stats" class="stats reveal">
-
-    <div class="container">
-
+    <div class="container stats-grid">
         <div class="stat-box">
-
-            <h2 class="counter" data-target="55">0</h2>
-
+            <h2 class="counter" data-target="45">0</h2>
             <p>Projects</p>
-
         </div>
-
         <div class="stat-box">
-
-            <h2 class="counter" data-target="8">0</h2>
-
+            <h2 class="counter" data-target="6">0</h2>
             <p>Categories</p>
-
         </div>
-
         <div class="stat-box">
-
             <h2 class="counter" data-target="100">0</h2>
-
             <p>Happy Clients</p>
-
         </div>
-
     </div>
-
 </section>
 
-<!-- ===========================
-CONTACT
-=========================== -->
-
 <section id="contact" class="contact reveal">
-
     <div class="container">
+        <h2 class="section-title">Contact & Booking</h2>
+        <p class="section-subtitle">Ready to work together? Send your brief and continue the discussion on Discord.</p>
 
-        <h2 class="section-title">
+        <div class="contact-layout">
+            <div class="contact-side">
+                <div class="contact-grid">
+                    <a href="mailto:falconvisualsofficial@gmail.com" class="contact-card">
+                        <i class="fas fa-envelope"></i>
+                        <h3>Email</h3>
+                        <p>falconvisualsofficial@gmail.com</p>
+                    </a>
 
-            Contact Me
+                    <a href="https://discord.gg/d3ZEnrrrNt" target="_blank" rel="noopener" class="contact-card">
+                        <i class="fab fa-discord"></i>
+                        <h3>Discord</h3>
+                        <p>falcon_visuals</p>
+                    </a>
 
-        </h2>
+                    <a href="https://www.reddit.com/user/Odd_Lavishness6771/" target="_blank" rel="noopener" class="contact-card">
+                        <i class="fab fa-reddit"></i>
+                        <h3>Reddit</h3>
+                        <p>u/Odd_Lavishness6771</p>
+                    </a>
+                </div>
+            </div>
 
-        <p class="section-subtitle">
+            <div class="booking-panel">
+                <div class="booking-intro">
+                    <h3>Start Your Project</h3>
+                    <p>
+                        Share a short brief below. After that, pricing, payment and any remaining project details
+                        will be discussed personally on Discord.
+                    </p>
+                </div>
 
-            Ready to work together? Feel free to contact me.
+                <form id="bookingForm" class="booking-form">
+                    <div class="form-group">
+                        <label for="clientName">Name</label>
+                        <input type="text" id="clientName" name="clientName" placeholder="Your name" required>
+                    </div>
 
-        </p>
+                    <div class="form-group">
+                        <label for="discordUsername">Discord Username</label>
+                        <input type="text" id="discordUsername" name="discordUsername" placeholder="username / display name" required>
+                    </div>
 
-        <a href="mailto:falconvisualsofficial@gmail.com" class="contact-card">
+                    <div class="form-group">
+                        <label for="serviceType">Service Category</label>
+                        <select id="serviceType" name="serviceType" required>
+                            <option value="">Select a category</option>
+                            <option>Artwork</option>
+                            <option>Mascot</option>
+                            <option>Text Base</option>
+                            <option>Vector Art</option>
+                            <option>Emotes</option>
+                            <option>V-Tuber</option>
+                        </select>
+                    </div>
 
-    <i class="fas fa-envelope"></i>
+                    <div class="form-group">
+                        <label for="budgetRange">Budget Range</label>
+                        <input type="text" id="budgetRange" name="budgetRange" placeholder="Optional budget range">
+                    </div>
 
-    <h3>Email</h3>
+                    <div class="form-group full-width">
+                        <label for="projectBrief">Project Requirements</label>
+                        <textarea id="projectBrief" name="projectBrief" rows="5" placeholder="Tell me what you need..." required></textarea>
+                    </div>
 
-    <p>falconvisualsofficial@gmail.com</p>
+                    <div class="form-actions">
+                        <button type="submit" class="btn">Continue on Discord</button>
+                        <p class="form-note">After booking, any remaining content, assets and final payment details will be discussed privately on Discord.</p>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
 
-</a>
+<footer class="site-footer">
+    <div class="container footer-grid">
+        <div class="footer-brand">
+            <div class="footer-logo-row">
+                <img src="preview.jpg" alt="Falcon Visuals logo">
+                <div>
+                    <h3>Falcon Visuals</h3>
+                    <p>Premium graphics for creators, streamers and brands.</p>
+                </div>
+            </div>
+            <div class="footer-socials">
+                <a href="mailto:falconvisualsofficial@gmail.com" aria-label="Email"><i class="fas fa-envelope"></i></a>
+                <a href="https://discord.gg/d3ZEnrrrNt" target="_blank" rel="noopener" aria-label="Discord"><i class="fab fa-discord"></i></a>
+                <a href="https://www.reddit.com/user/Odd_Lavishness6771/" target="_blank" rel="noopener" aria-label="Reddit"><i class="fab fa-reddit"></i></a>
+            </div>
+        </div>
 
-            <a href=https://discord.gg/d3ZEnrrrNt target="_blank" class="contact-card">
-    <i class="fab fa-discord"></i>
-    <h3>Discord</h3>
-    <p>falcon_visuals</p>
-</a>
+        <div class="footer-links">
+            <h4>Quick Links</h4>
+            <a href="#home">Home</a>
+            <a href="#portfolio">Portfolio</a>
+            <a href="#about">About</a>
+            <a href="#faq">FAQ</a>
+            <a href="#contact">Contact</a>
+        </div>
 
-            <a href="https://www.reddit.com/user/Odd_Lavishness6771/" target="_blank" class="contact-card">
+        <div class="footer-links">
+            <h4>Categories</h4>
+            <span>Artwork</span>
+            <span>Mascot</span>
+            <span>Text Base</span>
+            <span>Vector Art</span>
+            <span>Emotes</span>
+            <span>V-Tuber</span>
+        </div>
 
-    <i class="fab fa-reddit"></i>
-
-    <h3>Reddit</h3>
-
-    <p>u/Odd_Lavishness6771</p>
-
-       </a>
-       </div>
-
-       </section>
-
-<!-- ===========================
-FOOTER
-=========================== -->
-
-<footer>
-
-    <div class="container">
-
-        <p>
-
-            © 2026 Falcon Visuals. All Rights Reserved.
-
-        </p>
-
+        <div class="footer-links">
+            <h4>Booking Info</h4>
+            <span>Custom orders welcome</span>
+            <span>Pricing discussed on Discord</span>
+            <span>Payment confirmed privately</span>
+            <span>Project details finalized personally</span>
+        </div>
     </div>
 
+    <div class="container footer-bottom">
+        <p>© 2026 Falcon Visuals. All Rights Reserved.</p>
+    </div>
 </footer>
 
-<!-- ===========================
-GALLERY POPUP
-=========================== -->
-
-<div id="galleryOverlay" class="gallery-overlay"></div>
-
-<div class="cursor-glow"></div>
+<div id="galleryOverlay" class="gallery-overlay" aria-hidden="true"></div>
+<div class="cursor-glow" aria-hidden="true"></div>
 
 <script src="script.js"></script>
-
 </body>
-
 </html>
