@@ -25,10 +25,52 @@ const cursor = document.querySelector('.cursor-glow');
 const header = document.getElementById('header');
 const bookingForm = document.getElementById('bookingForm');
 
+
+function normalizePortfolio(rawPortfolio) {
+    const normalized = {};
+    Object.keys(sectionMap).forEach(category => {
+        normalized[category] = [];
+    });
+
+    // CMS-ready format: top-level array with title, category and images.
+    if (Array.isArray(rawPortfolio)) {
+        rawPortfolio.forEach(project => {
+            if (!project || typeof project !== 'object') return;
+            const category = project.category;
+            if (!normalized[category]) return;
+
+            normalized[category].push({
+                title: project.title || 'Untitled Project',
+                images: Array.isArray(project.images) ? project.images.filter(Boolean) : []
+            });
+        });
+        return normalized;
+    }
+
+    // Backward compatibility with the site's older category-keyed JSON format.
+    if (rawPortfolio && typeof rawPortfolio === 'object') {
+        Object.entries(rawPortfolio).forEach(([category, projects]) => {
+            if (!normalized[category] || !Array.isArray(projects)) return;
+            normalized[category] = projects;
+        });
+    }
+
+    return normalized;
+}
+
+function assetPath(file) {
+    if (!file) return 'preview.jpg';
+    const value = String(file).trim();
+    if (/^(https?:|data:|blob:)/i.test(value)) return value;
+    // Keep GitHub project-pages and future custom-domain paths portable.
+    return value.replace(/^\/+/, '').replace(/^\.\//, '');
+}
+
 async function loadPortfolio() {
     try {
         const response = await fetch('projects.json', { cache: 'no-store' });
-        portfolio = await response.json();
+        const rawPortfolio = await response.json();
+        portfolio = normalizePortfolio(rawPortfolio);
         createGallery();
         updateStats();
         applyFilters();
@@ -50,12 +92,13 @@ function createGallery() {
             card.dataset.title = (project.title || '').toLowerCase();
             card.dataset.category = category;
 
-            const firstImage = (project.images && project.images[0]) ? project.images[0] : 'preview.jpg';
+            const firstImage = assetPath((project.images && project.images[0]) ? project.images[0] : 'preview.jpg');
 
             card.innerHTML = `
                 <div class="thumb-wrap">
-                    <img src="${firstImage}" alt="${project.title}" loading="lazy">
+                    <img src="${firstImage}" alt="${project.title}" loading="lazy" draggable="false">
                     <span class="thumb-shade"></span>
+                    <span class="thumb-watermark" aria-hidden="true">FALCON VISUALS</span>
                 </div>
                 <h4>${project.title}</h4>
             `;
@@ -132,7 +175,7 @@ function openGallery() {
         if (['mp4', 'webm'].includes(ext)) {
             const video = document.createElement('video');
             video.className = 'gallery-media';
-            video.src = file;
+            video.src = assetPath(file);
             video.controls = true;
             video.playsInline = true;
             video.autoplay = true;
@@ -143,14 +186,24 @@ function openGallery() {
 
             const img = document.createElement('img');
             img.className = 'gallery-media';
-            img.src = file;
+            img.src = assetPath(file);
             img.alt = 'Project preview';
             img.loading = 'lazy';
             img.draggable = false;
 
             const watermark = document.createElement('div');
             watermark.className = 'watermark';
-            watermark.textContent = '© Falcon Visuals';
+
+            const watermarkMain = document.createElement('span');
+            watermarkMain.className = 'watermark-main';
+            watermarkMain.textContent = 'FALCON VISUALS';
+
+            const watermarkCorner = document.createElement('span');
+            watermarkCorner.className = 'watermark-corner';
+            watermarkCorner.textContent = '© FALCON VISUALS • PROTECTED PREVIEW';
+
+            watermark.appendChild(watermarkMain);
+            watermark.appendChild(watermarkCorner);
 
             wrapper.appendChild(img);
             wrapper.appendChild(watermark);
