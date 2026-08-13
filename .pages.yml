@@ -1,23 +1,16 @@
 media:
-  - name: portfolio_images
-    label: Portfolio Images
-    input: projects
-    output: projects
-    categories: [image]
-    extensions: [jpg, jpeg, png, webp, gif]
+  - name: project_images
+    label: Project Thumbnails
+    input: assets/images/projects
+    output: /assets/images/projects
     rename: safe
-    commit:
-      templates:
-        create: "Add portfolio image: {filename}"
-        update: "Update portfolio image: {filename}"
-        delete: "Remove portfolio image: {filename}"
-        rename: "Rename portfolio image: {oldFilename} -> {newFilename}"
+    extensions: [jpg, jpeg, png, webp]
 
 content:
   - name: portfolio_projects
     label: Portfolio Projects
     type: file
-    path: projects.json
+    path: data/projects.json
     format: json
     list: true
     fields:
@@ -25,40 +18,42 @@ content:
         label: Project Title
         type: string
         required: true
-        description: Name shown on the Falcon Visuals portfolio card.
-
       - name: category
         label: Category
         type: select
         required: true
         options:
-          placeholder: Select a portfolio category
           values:
-            - Artwork
-            - Mascot
-            - Text Base
-            - Vector Art
-            - Emotes
-            - name: V-tuber
-              label: V-Tuber
-
-      - name: images
-        label: Project Images
+            - name: ugc-ai
+              label: UGC & AI Ads
+            - name: paid-ads
+              label: Paid Ads
+            - name: high-end-reels
+              label: High-End Reels
+            - name: vsl
+              label: VSLs
+            - name: motion
+              label: Motion
+            - name: podcasts
+              label: Podcasts
+      - name: thumbnail
+        label: Thumbnail
         type: image
         required: true
-        description: Upload one or multiple images for this project. The first image is used as the card thumbnail.
+        description: Upload a JPG, PNG or WebP thumbnail. 1600×1000 or a similar landscape ratio works best.
         options:
-          media: portfolio_images
-          path: uploads
-          multiple: true
-          unique: true
-          categories: [image]
-          extensions: [jpg, jpeg, png, webp, gif]
+          media: project_images
+          extensions: [jpg, jpeg, png, webp]
           rename: safe
-
-settings:
-  hide: true
-  commit:
-    identity: user
-    templates:
-      update: "Update Falcon Visuals portfolio via Pages CMS"
+      - name: video_url
+        label: Video URL
+        type: string
+        description: Paste a YouTube Unlisted link, Vimeo link, or a direct MP4/WebM URL. Leave blank to open only the thumbnail.
+      - name: description
+        label: Short Description
+        type: text
+        description: One short sentence about the project.
+      - name: published
+        label: Show on Website
+        type: boolean
+        default: true
