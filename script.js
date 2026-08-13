@@ -1,500 +1,460 @@
-/* =========================================================
-   MUBAHAT VISUALS — SITE SETTINGS
-========================================================= */
-const SITE_CONFIG = {
-  email: "syedmubahatali@outlook.com",
-  phone: "+92 317 2624794",
-  phoneHref: "+923172624794",
-  whatsappNumber: "923172624794",
-  whatsapp: "https://wa.me/923172624794",
-  instagram: "https://www.instagram.com/mubahat.visuals?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==",
-  facebook: "https://www.facebook.com/profile.php?id=61583554167218",
-  linkedin: "https://www.linkedin.com/in/syed-mubahat-ali/",
-  upwork: "https://www.upwork.com/freelancers/~014497712665ec628b?mp_source=share",
-  showreelVideo: ""
+/* ==========================================
+   FALCON VISUALS PORTFOLIO
+========================================== */
+
+let portfolio = {};
+let currentImages = [];
+let currentIndex = 0;
+let activeFilter = 'All';
+let searchTerm = '';
+
+const sectionMap = {
+    'Artwork': 'artwork',
+    'Mascot': 'mascot',
+    'Text Base': 'textbase',
+    'Vector Art': 'vector',
+    'Emotes': 'emotes',
+    'V-tuber': 'vtuber'
 };
 
-const CATEGORY_LABELS = {
-  "ugc-ai": "UGC & AI Ads",
-  "paid-ads": "Paid Ads",
-  "high-end-reels": "High-End Reels",
-  vsl: "VSLs",
-  motion: "Motion",
-  podcasts: "Podcasts",
-  editing: "Editing",
-  "3d": "3D Animation",
-  web: "Website Development"
-};
+const overlay = document.getElementById('galleryOverlay');
+const searchInput = document.getElementById('search');
+const menuToggle = document.getElementById('menuToggle');
+const navMenu = document.getElementById('navMenu');
+const cursor = document.querySelector('.cursor-glow');
+const header = document.getElementById('header');
+const bookingForm = document.getElementById('bookingForm');
 
-const FILTER_CATEGORY_MAP = {
-  "ugc-ai": ["ugc-ai"],
-  "paid-ads": ["paid-ads", "editing"],
-  "high-end-reels": ["high-end-reels", "editing"],
-  vsl: ["vsl", "editing"],
-  motion: ["motion"],
-  podcasts: ["podcasts", "editing"]
-};
 
-// Used only if projects.json cannot load, such as when index.html is opened directly with file://.
-const FALLBACK_PORTFOLIO_ITEMS = [
-  { title: "UGC AI Ad Campaign", category: "ugc-ai", thumbnail: "assets/images/work-07.jpg", video_url: "", description: "Performance-focused UGC AI creative with a natural visual style.", published: true },
-  { title: "Mubahat Visuals Web Experience", category: "web", thumbnail: "assets/images/work-08.jpg", video_url: "", description: "A responsive creative-studio website with a clear conversion path and CMS-ready portfolio workflow.", published: true },
-  { title: "Automotive Launch Film", category: "editing", thumbnail: "assets/images/work-01.jpg", video_url: "", description: "Cinematic editing and sound-led pacing for an automotive launch.", published: true },
-  { title: "Future Product World", category: "3d", thumbnail: "assets/images/work-02.jpg", video_url: "", description: "A polished 3D product-film layout built around materials and motion.", published: true },
-  { title: "Fashion Brand Motion", category: "motion", thumbnail: "assets/images/work-03.jpg", video_url: "", description: "Brand motion graphics designed for a fast-paced social campaign.", published: true },
-  { title: "Performance Ad Series", category: "editing", thumbnail: "assets/images/work-04.jpg", video_url: "", description: "Commercial edits shaped around clarity, retention and conversion.", published: true },
-  { title: "Architectural Motion Study", category: "3d", thumbnail: "assets/images/work-05.jpg", video_url: "", description: "An architectural 3D study with controlled lighting and camera motion.", published: true },
-  { title: "Creator Identity Package", category: "motion", thumbnail: "assets/images/work-06.jpg", video_url: "", description: "A flexible motion identity system for creator-led content.", published: true }
-];
+function normalizePortfolio(rawPortfolio) {
+    const normalized = {};
+    Object.keys(sectionMap).forEach(category => {
+        normalized[category] = [];
+    });
 
-const $ = (selector, scope = document) => scope.querySelector(selector);
-const $$ = (selector, scope = document) => [...scope.querySelectorAll(selector)];
+    // CMS-ready format: top-level array with title, category and images.
+    if (Array.isArray(rawPortfolio)) {
+        rawPortfolio.forEach(project => {
+            if (!project || typeof project !== 'object') return;
+            const category = project.category;
+            if (!normalized[category]) return;
 
-const siteHeader = $("#siteHeader");
-const menuToggle = $("#menuToggle");
-const siteNav = $("#siteNav");
-const portfolioGrid = $("#portfolioGrid");
-const filterTabs = $("#filterTabs");
-const mediaModal = $("#mediaModal");
-const modalContent = $("#modalContent");
-const modalClose = $("#modalClose");
-const showreelCard = $("#showreelCard");
-const contactForm = $("#contactForm");
-const websiteForm = $("#websiteForm");
-
-let portfolioItems = [];
-let activeFilter = "all";
-
-function escapeHTML(value = "") {
-  return String(value)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
-
-function resolveMediaPath(value = "") {
-  const path = String(value).trim();
-  if (!path) return "";
-  if (/^(https?:)?\/\//i.test(path) || path.startsWith("data:") || path.startsWith("blob:")) return path;
-  const cleaned = path.replace(/^\/+/, "");
-  try {
-    return new URL(cleaned, document.baseURI).href;
-  } catch (_) {
-    return cleaned;
-  }
-}
-
-function getYouTubeId(urlValue) {
-  try {
-    const url = new URL(urlValue);
-    const host = url.hostname.replace(/^www\./, "");
-    if (host === "youtu.be") return url.pathname.split("/").filter(Boolean)[0] || "";
-    if (host.endsWith("youtube.com")) {
-      if (url.pathname === "/watch") return url.searchParams.get("v") || "";
-      const parts = url.pathname.split("/").filter(Boolean);
-      if (["shorts", "embed", "live"].includes(parts[0])) return parts[1] || "";
+            normalized[category].push({
+                title: project.title || 'Untitled Project',
+                thumbnail: project.thumbnail || '',
+                images: Array.isArray(project.images) ? project.images.filter(Boolean) : []
+            });
+        });
+        return normalized;
     }
-  } catch (_) {
-    return "";
-  }
-  return "";
+
+    // Backward compatibility with the site's older category-keyed JSON format.
+    if (rawPortfolio && typeof rawPortfolio === 'object') {
+        Object.entries(rawPortfolio).forEach(([category, projects]) => {
+            if (!normalized[category] || !Array.isArray(projects)) return;
+            normalized[category] = projects;
+        });
+    }
+
+    return normalized;
 }
 
-function getVimeoId(urlValue) {
-  try {
-    const url = new URL(urlValue);
-    if (!url.hostname.includes("vimeo.com")) return "";
-    const parts = url.pathname.split("/").filter(Boolean);
-    const candidate = parts.reverse().find((part) => /^\d+$/.test(part));
-    return candidate || "";
-  } catch (_) {
-    return "";
-  }
-}
-
-function isDirectVideo(urlValue) {
-  try {
-    const path = new URL(urlValue, document.baseURI).pathname.toLowerCase();
-    return [".mp4", ".webm", ".ogg", ".mov"].some((extension) => path.endsWith(extension));
-  } catch (_) {
-    return false;
-  }
-}
-
-/* =========================================================
-   CURSOR GLOW — DESKTOP ONLY
-========================================================= */
-const cursorGlow = $("#cursorGlow");
-const finePointer = window.matchMedia("(pointer: fine) and (hover: hover)");
-
-if (cursorGlow && finePointer.matches) {
-  document.documentElement.classList.add("custom-cursor-enabled");
-
-  let targetX = -100;
-  let targetY = -100;
-  let currentX = -100;
-  let currentY = -100;
-
-  const animateCursor = () => {
-    currentX += (targetX - currentX) * 0.38;
-    currentY += (targetY - currentY) * 0.38;
-    cursorGlow.style.transform = `translate3d(${currentX}px, ${currentY}px, 0)`;
-    requestAnimationFrame(animateCursor);
-  };
-
-  window.addEventListener("pointermove", (event) => {
-    targetX = event.clientX;
-    targetY = event.clientY;
-    cursorGlow.classList.add("is-visible");
-
-    const interactive = event.target.closest(
-      "a, button, input, textarea, select, .service-card, .portfolio-card, .showreel-card, .testimonial-card, .faq-item"
-    );
-    cursorGlow.classList.toggle("is-hovering", Boolean(interactive));
-  }, { passive: true });
-
-  window.addEventListener("blur", () => cursorGlow.classList.remove("is-visible"));
-  document.addEventListener("mouseleave", () => cursorGlow.classList.remove("is-visible"));
-  document.addEventListener("mouseenter", () => cursorGlow.classList.add("is-visible"));
-  document.addEventListener("pointerdown", () => cursorGlow.classList.add("is-clicking"));
-  document.addEventListener("pointerup", () => cursorGlow.classList.remove("is-clicking"));
-
-  animateCursor();
-}
-
-/* =========================================================
-   NAVIGATION + SCROLL REVEALS
-========================================================= */
-if (siteHeader) {
-  const updateHeader = () => siteHeader.classList.toggle("scrolled", window.scrollY > 18);
-  updateHeader();
-  window.addEventListener("scroll", updateHeader, { passive: true });
-}
-
-if (menuToggle && siteNav) {
-  menuToggle.addEventListener("click", () => {
-    const isOpen = siteNav.classList.toggle("open");
-    menuToggle.classList.toggle("active", isOpen);
-    menuToggle.setAttribute("aria-expanded", String(isOpen));
-    document.body.classList.toggle("menu-open", isOpen);
-  });
-
-  $$("a", siteNav).forEach((link) => {
-    link.addEventListener("click", () => {
-      siteNav.classList.remove("open");
-      menuToggle.classList.remove("active");
-      menuToggle.setAttribute("aria-expanded", "false");
-      document.body.classList.remove("menu-open");
-    });
-  });
-}
-
-if ("IntersectionObserver" in window) {
-  const revealObserver = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add("in-view");
-        revealObserver.unobserve(entry.target);
-      }
-    });
-  }, { threshold: 0.12 });
-
-  $$(".reveal").forEach((element) => revealObserver.observe(element));
-} else {
-  $$(".reveal").forEach((element) => element.classList.add("in-view"));
-}
-
-const counters = $$("[data-count]");
-if (counters.length && "IntersectionObserver" in window) {
-  const counterObserver = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-      if (!entry.isIntersecting) return;
-      const element = entry.target;
-      const target = Number(element.dataset.count);
-      const duration = 1000;
-      const start = performance.now();
-
-      const animate = (time) => {
-        const progress = Math.min((time - start) / duration, 1);
-        const eased = 1 - Math.pow(1 - progress, 3);
-        element.textContent = Math.round(target * eased);
-        if (progress < 1) requestAnimationFrame(animate);
-      };
-
-      requestAnimationFrame(animate);
-      counterObserver.unobserve(element);
-    });
-  }, { threshold: 0.7 });
-
-  counters.forEach((counter) => counterObserver.observe(counter));
-}
-
-/* =========================================================
-   PORTFOLIO — DATA COMES FROM data/projects.json
-========================================================= */
-function normalizeProject(project, index) {
-  const category = CATEGORY_LABELS[project.category] ? project.category : "editing";
-  return {
-    id: `project-${index}`,
-    title: String(project.title || `Project ${index + 1}`).trim(),
-    category,
-    categoryLabel: CATEGORY_LABELS[category],
-    thumbnail: resolveMediaPath(project.thumbnail || project.image || "assets/images/showreel-poster.jpg"),
-    videoUrl: String(project.video_url || project.video || "").trim(),
-    description: String(project.description || "").trim(),
-    published: project.published !== false
-  };
+function assetPath(file) {
+    if (!file) return 'preview.jpg';
+    const value = String(file).trim();
+    if (/^(https?:|data:|blob:)/i.test(value)) return value;
+    // Keep GitHub project-pages and future custom-domain paths portable.
+    return value.replace(/^\/+/, '').replace(/^\.\//, '');
 }
 
 async function loadPortfolio() {
-  let rawProjects = FALLBACK_PORTFOLIO_ITEMS;
-  try {
-    const response = await fetch("data/projects.json", { cache: "no-cache" });
-    if (!response.ok) throw new Error(`Portfolio request failed: ${response.status}`);
-    const parsed = await response.json();
-    if (!Array.isArray(parsed)) throw new Error("projects.json must contain an array");
-    rawProjects = parsed;
-  } catch (error) {
-    console.warn("Using local portfolio fallback:", error.message);
-  }
-
-  portfolioItems = rawProjects
-    .map(normalizeProject)
-    .filter((project) => project.published);
-
-  renderPortfolio(activeFilter);
+    try {
+        const response = await fetch('projects.json', { cache: 'no-store' });
+        const rawPortfolio = await response.json();
+        portfolio = normalizePortfolio(rawPortfolio);
+        createGallery();
+        updateStats();
+        applyFilters();
+    } catch (error) {
+        console.error('Projects JSON Error:', error);
+    }
 }
 
-function renderPortfolio(filter = "all") {
-  if (!portfolioGrid) return;
-  activeFilter = filter;
-  const acceptedCategories = FILTER_CATEGORY_MAP[filter] || [filter];
-  const items = filter === "all"
-    ? portfolioItems
-    : portfolioItems.filter((item) => acceptedCategories.includes(item.category));
+function createGallery() {
+    Object.keys(portfolio).forEach(category => {
+        const gallery = document.querySelector(`#${sectionMap[category]} .gallery`);
+        if (!gallery) return;
 
-  if (!items.length) {
-    portfolioGrid.innerHTML = `
-      <div class="portfolio-empty">
-        <span>Selected work</span>
-        <h3>New projects are being prepared.</h3>
-        <p>Check back soon or contact us for relevant private samples.</p>
-      </div>`;
-    return;
-  }
+        gallery.innerHTML = '';
 
-  portfolioGrid.innerHTML = items.map((item, index) => `
-    <article class="portfolio-card" tabindex="0" role="button" aria-label="Open ${escapeHTML(item.title)}" data-id="${escapeHTML(item.id)}" style="animation-delay:${index * 70}ms">
-      <img src="${escapeHTML(item.thumbnail)}" alt="${escapeHTML(item.title)}" loading="lazy" decoding="async">
-      <div class="portfolio-overlay"></div>
-      <div class="portfolio-info">
-        <div><h3>${escapeHTML(item.title)}</h3><p>${escapeHTML(item.categoryLabel)}</p></div>
-        <span class="portfolio-open">${item.videoUrl ? "▶" : "↗"}</span>
-      </div>
-    </article>
-  `).join("");
+        portfolio[category].forEach(project => {
+            const card = document.createElement('article');
+            card.className = 'project-card';
+            card.dataset.title = (project.title || '').toLowerCase();
+            card.dataset.category = category;
 
-  $$(".portfolio-card", portfolioGrid).forEach((card) => {
-    const open = () => {
-      const project = portfolioItems.find((item) => item.id === card.dataset.id);
-      if (project) openProject(project);
-    };
-    card.addEventListener("click", open);
-    card.addEventListener("keydown", (event) => {
-      if (event.key === "Enter" || event.key === " ") {
-        event.preventDefault();
-        open();
-      }
+            const firstImage = assetPath((project.images && project.images[0]) ? project.images[0] : 'preview.jpg');
+            const cardImage = assetPath(project.thumbnail || firstImage);
+
+            card.innerHTML = `
+                <div class="thumb-wrap">
+                    <img src="${cardImage}" alt="${project.title}" loading="lazy" decoding="async" fetchpriority="low" width="640" height="600" draggable="false">
+                    <span class="thumb-shade"></span>
+                    <span class="thumb-watermark" aria-hidden="true">FALCON VISUALS</span>
+                </div>
+                <h4>${project.title}</h4>
+            `;
+
+            card.addEventListener('click', () => {
+                currentImages = (project.images || []).filter(Boolean);
+                currentIndex = 0;
+                openGallery();
+            });
+
+            gallery.appendChild(card);
+        });
     });
-  });
 }
 
-if (filterTabs) {
-  filterTabs.addEventListener("click", (event) => {
-    const button = event.target.closest(".filter-button");
-    if (!button) return;
-    $$(".filter-button", filterTabs).forEach((item) => item.classList.remove("active"));
-    button.classList.add("active");
-    renderPortfolio(button.dataset.filter);
-  });
+function openGallery() {
+    if (!currentImages.length) return;
+
+    overlay.innerHTML = '';
+    overlay.classList.add('active');
+    overlay.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+
+    const content = document.createElement('div');
+    content.className = 'gallery-content';
+
+    const close = document.createElement('button');
+    close.className = 'gallery-close';
+    close.setAttribute('aria-label', 'Close gallery');
+    close.innerHTML = '<i class="fas fa-times"></i>';
+
+    const prev = document.createElement('button');
+    prev.className = 'gallery-prev';
+    prev.setAttribute('aria-label', 'Previous image');
+    prev.innerHTML = '<i class="fas fa-chevron-left"></i>';
+
+    const next = document.createElement('button');
+    next.className = 'gallery-next';
+    next.setAttribute('aria-label', 'Next image');
+    next.innerHTML = '<i class="fas fa-chevron-right"></i>';
+
+    const counter = document.createElement('div');
+    counter.className = 'gallery-counter';
+
+    const tip = document.createElement('div');
+    tip.className = 'gallery-tip';
+    tip.textContent = 'Protected preview • Do not copy or download';
+
+    const escHandler = (event) => {
+        if (event.key === 'Escape') closeGallery();
+        if (event.key === 'ArrowLeft') showPrev();
+        if (event.key === 'ArrowRight') showNext();
+    };
+
+    const closeGallery = () => {
+        overlay.classList.remove('active');
+        overlay.setAttribute('aria-hidden', 'true');
+        overlay.innerHTML = '';
+        document.body.style.overflow = '';
+        overlay.removeEventListener('click', overlayClickHandler);
+        document.removeEventListener('keydown', escHandler);
+    };
+
+    function showImage() {
+        const oldMedia = content.querySelector('.image-wrapper, video');
+        if (oldMedia) oldMedia.remove();
+
+        const file = currentImages[currentIndex];
+        if (!file) return;
+
+        const ext = file.split('.').pop().toLowerCase();
+        counter.textContent = `${currentIndex + 1} / ${currentImages.length}`;
+
+        if (['mp4', 'webm'].includes(ext)) {
+            const video = document.createElement('video');
+            video.className = 'gallery-media';
+            video.src = assetPath(file);
+            video.controls = true;
+            video.playsInline = true;
+            video.autoplay = true;
+            content.insertBefore(video, close);
+        } else {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'image-wrapper';
+
+            const img = document.createElement('img');
+            img.className = 'gallery-media';
+            img.src = assetPath(file);
+            img.alt = 'Project preview';
+            img.decoding = 'async';
+            img.fetchPriority = 'high';
+            img.draggable = false;
+
+            img.addEventListener('load', () => {
+                const nextFile = currentImages[(currentIndex + 1) % currentImages.length];
+                if (!nextFile) return;
+                const nextExt = nextFile.split('.').pop().toLowerCase();
+                if (!['mp4', 'webm'].includes(nextExt)) {
+                    const preload = new Image();
+                    preload.decoding = 'async';
+                    preload.src = assetPath(nextFile);
+                }
+            }, { once: true });
+
+            const watermark = document.createElement('div');
+            watermark.className = 'watermark';
+
+            const watermarkMain = document.createElement('span');
+            watermarkMain.className = 'watermark-main';
+            watermarkMain.textContent = 'FALCON VISUALS';
+
+            const watermarkCorner = document.createElement('span');
+            watermarkCorner.className = 'watermark-corner';
+            watermarkCorner.textContent = '© FALCON VISUALS • PROTECTED PREVIEW';
+
+            watermark.appendChild(watermarkMain);
+            watermark.appendChild(watermarkCorner);
+
+            wrapper.appendChild(img);
+            wrapper.appendChild(watermark);
+            content.insertBefore(wrapper, close);
+        }
+    }
+
+    const showPrev = () => {
+        currentIndex = (currentIndex - 1 + currentImages.length) % currentImages.length;
+        showImage();
+    };
+
+    const showNext = () => {
+        currentIndex = (currentIndex + 1) % currentImages.length;
+        showImage();
+    };
+
+    close.addEventListener('click', closeGallery);
+    prev.addEventListener('click', showPrev);
+    next.addEventListener('click', showNext);
+
+    const overlayClickHandler = (event) => {
+        if (event.target === overlay) closeGallery();
+    };
+
+    overlay.addEventListener('click', overlayClickHandler);
+    document.addEventListener('keydown', escHandler);
+
+    let touchStartX = 0;
+    content.addEventListener('touchstart', (event) => {
+        touchStartX = event.changedTouches[0].screenX;
+    }, { passive: true });
+
+    content.addEventListener('touchend', (event) => {
+        const touchEndX = event.changedTouches[0].screenX;
+        if (touchStartX - touchEndX > 50) showNext();
+        if (touchEndX - touchStartX > 50) showPrev();
+    }, { passive: true });
+
+    content.appendChild(close);
+    content.appendChild(prev);
+    content.appendChild(next);
+    content.appendChild(counter);
+    content.appendChild(tip);
+    overlay.appendChild(content);
+    showImage();
+}
+
+function applyFilters() {
+    document.querySelectorAll('#portfolio section').forEach(section => {
+        const sectionTitle = section.dataset.category || section.querySelector('h3')?.textContent || '';
+        const cards = Array.from(section.querySelectorAll('.project-card'));
+
+        let visibleCards = 0;
+        cards.forEach(card => {
+            const title = card.dataset.title || '';
+            const matchesSearch = !searchTerm || title.includes(searchTerm);
+            const matchesFilter = activeFilter === 'All' || sectionTitle === activeFilter;
+            const shouldShow = matchesSearch && matchesFilter;
+            card.style.display = shouldShow ? '' : 'none';
+            if (shouldShow) visibleCards += 1;
+        });
+
+        section.style.display = (visibleCards > 0) ? 'block' : 'none';
+    });
+}
+
+function updateStats() {
+    const projectCount = Object.values(portfolio).reduce((sum, list) => sum + list.length, 0);
+    const categoryCount = Object.keys(portfolio).length;
+    const statTargets = document.querySelectorAll('.counter');
+    if (statTargets[0]) statTargets[0].dataset.target = projectCount;
+    if (statTargets[1]) statTargets[1].dataset.target = categoryCount;
+}
+
+if (searchInput) {
+    searchInput.addEventListener('input', function () {
+        searchTerm = this.value.trim().toLowerCase();
+        applyFilters();
+    });
+}
+
+document.querySelectorAll('.filter-btn').forEach(button => {
+    button.addEventListener('click', () => {
+        document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+        button.classList.add('active');
+        activeFilter = button.textContent.trim();
+        applyFilters();
+    });
+});
+
+document.querySelectorAll('.faq-question').forEach(button => {
+    button.addEventListener('click', () => {
+        button.parentElement.classList.toggle('active');
+    });
+});
+
+const reveals = document.querySelectorAll('.reveal');
+function revealOnScroll() {
+    reveals.forEach(section => {
+        const top = section.getBoundingClientRect().top;
+        const trigger = window.innerHeight - 120;
+        if (top < trigger) section.classList.add('active');
+    });
+}
+window.addEventListener('scroll', revealOnScroll);
+window.addEventListener('load', revealOnScroll);
+
+const counters = document.querySelectorAll('.counter');
+const counterObserver = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+
+        const counter = entry.target;
+        const target = Number(counter.dataset.target || 0);
+        let value = 0;
+        const speed = Math.max(target / 80, 1);
+
+        function update() {
+            value += speed;
+            if (value < target) {
+                counter.textContent = Math.floor(value);
+                requestAnimationFrame(update);
+            } else {
+                counter.textContent = `${target}+`;
+            }
+        }
+
+        update();
+        counterObserver.unobserve(counter);
+    });
+});
+counters.forEach(counter => counterObserver.observe(counter));
+
+if (menuToggle) {
+    menuToggle.addEventListener('click', () => navMenu.classList.toggle('active'));
+}
+
+document.querySelectorAll('nav a').forEach(link => {
+    link.addEventListener('click', () => navMenu.classList.remove('active'));
+});
+
+window.addEventListener('scroll', () => {
+    header.classList.toggle('scrolled', window.scrollY > 10);
+});
+
+window.addEventListener('load', () => {
+    const loader = document.getElementById('loader');
+    requestAnimationFrame(() => {
+        setTimeout(() => loader?.classList.add('hide'), 250);
+    });
+    document.body.classList.add('cursor-active');
+});
+
+const typingTarget = document.getElementById('typingText');
+if (typingTarget) {
+    const words = ['Professional Graphic Designer', 'Creative Design For Streamers', 'Branding & Custom Visuals'];
+    let wordIndex = 0;
+    let charIndex = 0;
+    let isDeleting = false;
+
+    function typeLoop() {
+        const currentWord = words[wordIndex];
+        typingTarget.textContent = currentWord.slice(0, charIndex);
+
+        if (!isDeleting) {
+            charIndex++;
+            if (charIndex > currentWord.length) {
+                isDeleting = true;
+                setTimeout(typeLoop, 1200);
+                return;
+            }
+        } else {
+            charIndex--;
+            if (charIndex < 0) {
+                isDeleting = false;
+                wordIndex = (wordIndex + 1) % words.length;
+                charIndex = 0;
+            }
+        }
+
+        setTimeout(typeLoop, isDeleting ? 45 : 75);
+    }
+
+    typeLoop();
+}
+
+document.addEventListener('contextmenu', event => event.preventDefault());
+document.addEventListener('dragstart', event => {
+    if (event.target.tagName === 'IMG') event.preventDefault();
+});
+document.addEventListener('keydown', event => {
+    const key = event.key.toLowerCase();
+    if ((event.ctrlKey || event.metaKey) && ['s', 'u', 'p'].includes(key)) event.preventDefault();
+});
+
+if (cursor) {
+    document.addEventListener('mousemove', event => {
+        cursor.style.left = `${event.clientX}px`;
+        cursor.style.top = `${event.clientY}px`;
+    });
+
+    document.querySelectorAll('a, button, .project-card, input, textarea, select').forEach(item => {
+        item.addEventListener('mouseenter', () => document.body.classList.add('cursor-hover'));
+        item.addEventListener('mouseleave', () => document.body.classList.remove('cursor-hover'));
+    });
+}
+
+if (bookingForm) {
+    bookingForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        const name = document.getElementById('clientName').value.trim();
+        const discord = document.getElementById('discordUsername').value.trim();
+        const service = document.getElementById('serviceType').value.trim();
+        const budget = document.getElementById('budgetRange').value.trim() || 'Not specified';
+        const brief = document.getElementById('projectBrief').value.trim();
+
+        const message = [
+            'Falcon Visuals Project Brief',
+            `Name: ${name}`,
+            `Discord Username: ${discord}`,
+            `Category: ${service}`,
+            `Budget: ${budget}`,
+            `Requirements: ${brief}`
+        ].join('\n');
+
+        try {
+            await navigator.clipboard.writeText(message);
+            alert('Your project brief has been copied. Discord will open next — just paste the brief there.');
+        } catch (error) {
+            alert('Your project brief is ready. Discord will open next — if clipboard permission is blocked, copy the details manually.');
+        }
+
+        window.open('https://discord.gg/d3ZEnrrrNt', '_blank', 'noopener');
+        bookingForm.reset();
+    });
 }
 
 loadPortfolio();
-
-/* =========================================================
-   VIDEO / IMAGE PREVIEW MODAL
-========================================================= */
-function openModal(content) {
-  if (!modalContent || !mediaModal || !modalClose) return;
-  modalContent.innerHTML = content;
-  mediaModal.classList.add("open");
-  mediaModal.setAttribute("aria-hidden", "false");
-  document.body.classList.add("modal-open");
-  modalClose.focus();
-}
-
-function closeModal() {
-  if (!modalContent || !mediaModal) return;
-  const video = $("video", modalContent);
-  if (video) video.pause();
-  modalContent.querySelectorAll("iframe").forEach((iframe) => { iframe.src = "about:blank"; });
-  mediaModal.classList.remove("open");
-  mediaModal.setAttribute("aria-hidden", "true");
-  document.body.classList.remove("modal-open");
-  window.setTimeout(() => { modalContent.innerHTML = ""; }, 240);
-}
-
-function projectCaption(item) {
-  if (!item.description) return "";
-  return `<div class="modal-caption"><span>${escapeHTML(item.categoryLabel)}</span><h3>${escapeHTML(item.title)}</h3><p>${escapeHTML(item.description)}</p></div>`;
-}
-
-function openProject(item) {
-  const videoUrl = resolveMediaPath(item.videoUrl);
-  const youtubeId = getYouTubeId(videoUrl);
-  const vimeoId = getVimeoId(videoUrl);
-  const caption = projectCaption(item);
-
-  if (youtubeId) {
-    openModal(`<div class="video-embed"><iframe src="https://www.youtube-nocookie.com/embed/${encodeURIComponent(youtubeId)}?autoplay=1&rel=0" title="${escapeHTML(item.title)}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe></div>${caption}`);
-    return;
-  }
-
-  if (vimeoId) {
-    openModal(`<div class="video-embed"><iframe src="https://player.vimeo.com/video/${encodeURIComponent(vimeoId)}?autoplay=1" title="${escapeHTML(item.title)}" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe></div>${caption}`);
-    return;
-  }
-
-  if (videoUrl && isDirectVideo(videoUrl)) {
-    openModal(`<video src="${escapeHTML(videoUrl)}" controls autoplay playsinline poster="${escapeHTML(item.thumbnail)}"></video>${caption}`);
-    return;
-  }
-
-  openModal(`<img src="${escapeHTML(item.thumbnail)}" alt="${escapeHTML(item.title)}">${caption}`);
-}
-
-function openShowreel() {
-  const videoPath = SITE_CONFIG.showreelVideo.trim();
-  if (videoPath) {
-    openProject({
-      title: "Mubahat Visuals Showreel",
-      categoryLabel: "Showreel",
-      thumbnail: resolveMediaPath("assets/images/showreel-poster.jpg"),
-      videoUrl: videoPath,
-      description: "A selection of editing, motion, 3D and UGC AI work."
-    });
-  } else {
-    openModal('<img src="assets/images/showreel-poster.jpg" alt="Mubahat Visuals showreel cover">');
-  }
-}
-
-if (showreelCard) {
-  showreelCard.addEventListener("click", openShowreel);
-  showreelCard.addEventListener("keydown", (event) => {
-    if (event.key === "Enter" || event.key === " ") {
-      event.preventDefault();
-      openShowreel();
-    }
-  });
-}
-if (modalClose) modalClose.addEventListener("click", closeModal);
-if (mediaModal) {
-  mediaModal.addEventListener("click", (event) => {
-    if (event.target === mediaModal) closeModal();
-  });
-}
-document.addEventListener("keydown", (event) => {
-  if (event.key === "Escape" && mediaModal?.classList.contains("open")) closeModal();
-});
-
-/* =========================================================
-   FAQ
-========================================================= */
-$$(".faq-item").forEach((item) => {
-  const button = $("button", item);
-  if (!button) return;
-  button.addEventListener("click", () => {
-    const isOpen = item.classList.contains("open");
-    $$(".faq-item").forEach((other) => {
-      other.classList.remove("open");
-      $("button", other)?.setAttribute("aria-expanded", "false");
-    });
-    if (!isOpen) {
-      item.classList.add("open");
-      button.setAttribute("aria-expanded", "true");
-    }
-  });
-});
-
-/* =========================================================
-   CONTACT DETAILS + WHATSAPP PROJECT FORM
-========================================================= */
-const emailLink = $("#emailLink");
-const phoneLink = $("#phoneLink");
-const whatsappLink = $("#whatsappLink");
-const instagramLink = $("#instagramLink");
-
-if (emailLink) {
-  emailLink.textContent = SITE_CONFIG.email;
-  emailLink.href = `mailto:${SITE_CONFIG.email}`;
-}
-if (phoneLink) {
-  phoneLink.textContent = SITE_CONFIG.phone;
-  phoneLink.href = `tel:${SITE_CONFIG.phoneHref}`;
-}
-if (whatsappLink) whatsappLink.href = SITE_CONFIG.whatsapp;
-if (instagramLink) instagramLink.href = SITE_CONFIG.instagram;
-
-if (contactForm) {
-  contactForm.addEventListener("submit", (event) => {
-    event.preventDefault();
-    if (!contactForm.reportValidity()) return;
-
-    const data = new FormData(contactForm);
-    const message = [
-      "Hello Mubahat Visuals, I would like to discuss a project.",
-      "",
-      `Name: ${data.get("name")}`,
-      `Email: ${data.get("email")}`,
-      `Project type: ${data.get("project")}`,
-      "",
-      "Project details:",
-      String(data.get("message") || "").trim()
-    ].join("\n");
-
-    const url = `https://wa.me/${SITE_CONFIG.whatsappNumber}?text=${encodeURIComponent(message)}`;
-    const newWindow = window.open(url, "_blank");
-    if (newWindow) {
-      newWindow.opener = null;
-    } else {
-      window.location.href = url;
-    }
-  });
-}
-
-
-if (websiteForm) {
-  websiteForm.addEventListener("submit", (event) => {
-    event.preventDefault();
-    if (!websiteForm.reportValidity()) return;
-    const data = new FormData(websiteForm);
-    const message = [
-      "Hello Mubahat Visuals, I would like to discuss a website project.", "",
-      `Name: ${data.get("name")}`,
-      `WhatsApp: ${data.get("whatsapp")}`,
-      `Business / brand: ${data.get("business")}`,
-      `Website type: ${data.get("websiteType")}`,
-      `Domain: ${data.get("domain")}`,
-      `Reference: ${data.get("references") || "Not shared"}`, "",
-      "Main goal / requirements:", String(data.get("requirements") || "").trim()
-    ].join("\n");
-    const url = `https://wa.me/${SITE_CONFIG.whatsappNumber}?text=${encodeURIComponent(message)}`;
-    const newWindow = window.open(url, "_blank");
-    if (newWindow) newWindow.opener = null; else window.location.href = url;
-  });
-}
-
-const currentYear = $("#currentYear");
-if (currentYear) currentYear.textContent = new Date().getFullYear();
